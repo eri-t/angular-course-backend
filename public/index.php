@@ -43,6 +43,36 @@ $app->get('/products', function (Request $request, Response $response) {
     echo json_encode($result);
 });
 
+// Fetch by id
+//
+$app->get('/product/{id}', function (Request $request, Response $response, $args) {
+    $id = $args['id'];
+
+    $query="SELECT * FROM products WHERE id=?";
+    
+    $stmt = $this->db->prepare($query);
+    $stmt->execute([$id]);
+    $product=$stmt->fetch(PDO::FETCH_OBJ);
+
+    $result=array(
+        'status'=> 'error',
+        'code' => 404,
+        'message' => 'Product not found'
+    );
+    
+    if($product) {
+
+        $result=array(
+            'status'=> 'success',
+            'code' => 200,
+            'data' => $product
+        );
+    }
+
+    echo json_encode($result);
+});
+
+
 // Insert product
 //
 $app->post('/products', function (Request $request, Response $response) {
@@ -66,8 +96,6 @@ $app->post('/products', function (Request $request, Response $response) {
     if(!isset($data['image'])){
         $data['image']= null;
     }
-
-    // var_dump($data);
     
     $row = [
         'name' => $data['name'],
